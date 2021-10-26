@@ -1,0 +1,67 @@
+@using FileData
+@using Microsoft.AspNetCore.Components
+@using Models
+@inject NavigationManager NavigationManager
+@inject FileContext FileContext
+
+<EditForm Model="@newAdult" OnValidSubmit="@AddNewAdultToFamily">
+    <DataAnnotationsValidator/> <ValidationSummary/>
+    <div class="form-group">
+        Family ID: <br/>
+        <select @bind="familyID">
+            @if (fileContext?.Families != null)
+            {
+                @foreach (var family in fileContext.Families)
+                {
+                    <option value="@family.Id">@family.Id</option>
+                }
+            }
+        </select>
+    </div>
+    @if(familyID==0)
+        {
+            string request ="First, you have to select a family ID";
+            @request
+        }else{
+    <div class="form-group"> First Name:<br/> <InputText rows="4" @bind-Value="newAdult.FirstName"/> </div>
+    <div class="form-group"> Last Name:<br/> <InputText rows="4" @bind-Value="newAdult.LastName"/> </div>
+    <div class="form-group"> Hair Color:<br/> <InputText rows="4" @bind-Value="newAdult.HairColor"/> </div>
+    <div class="form-group"> Eye Color:<br/> <InputText rows="4" @bind-Value="newAdult.EyeColor"/> </div>
+    <div class="form-group"> Age:<br/> <InputNumber rows="4" @bind-Value="newAdult.Age"/> </div>
+    <div class="form-group"> Weight:<br/> <InputNumber rows="4" @bind-Value="newAdult.Weight"/> </div>
+    <div class="form-group"> Height:<br/> <InputNumber rows="4" @bind-Value="newAdult.Height"/> </div>
+    <div class="form-group"> Gender:<br/> <InputText rows="4" @bind-Value="newAdult.Sex"/> </div>
+    <div class="form-group"> Job:<br/> <InputText rows="4" @bind-Value="newAdult.JobTitle.JobTitle"/> </div>
+    <div class="form-group"> Salary:<br/> <InputNumber rows="4" @bind-Value="newAdult.JobTitle.Salary"/> </div>
+    <p class="actions">
+        <button class="btn btn-outline-dark" type="submit">Create</button>
+    </p>}
+</EditForm>
+
+@code {
+    private Adult newAdult = new Adult()
+    {
+        JobTitle = new Job()
+    };
+
+    private int familyID=0;
+    private FileContext fileContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        fileContext = new();
+    }
+    private void AddNewAdultToFamily()
+    {
+
+        if (fileContext.Families.FirstOrDefault(t => t.Id == familyID).Adults == null)
+        {
+            fileContext.Families.FirstOrDefault(t => t.Id == familyID).Adults = new List<Adult>();
+        }
+        newAdult.Id = fileContext.Families.FirstOrDefault(t => t.Id == familyID).Adults.Count + 1;
+        fileContext.Families.FirstOrDefault(t => t.Id == familyID).Adults.Add(newAdult);
+        fileContext.SaveChanges();
+        NavigationManager.NavigateTo("/ViewFamilies");
+    }
+
+}
